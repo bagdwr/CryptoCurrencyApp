@@ -19,7 +19,7 @@ class CoinListVH(
                     val tvMarketCap=findViewById<TextView>(R.id.tvMarketCap)
                     val tvCoinVolume=findViewById<TextView>(R.id.tvCoinVolume)
 
-                    tvCoinName.text = "$"+coin.name.toString()
+                    tvCoinName.text = coin.name.toString()
                     tvCoinPrice.text = "$"+coin.current_price.toString()
                     tvMarketCap.text="$"+coin.market_cap.toString()
                     tvCoinVolume.text="$"+coin.total_volume.toString()
