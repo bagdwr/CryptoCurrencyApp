@@ -12,11 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cryptocurrency.models.Coin
 import com.example.cryptocurrency.recyclerView.CoinListAdapter
-import com.jaredsburrows.retrofit2.adapter.synchronous.SynchronousCallAdapterFactory
-import io.reactivex.Scheduler
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,35 +46,34 @@ class CoinsListFragment:Fragment() {
         rvCoins?.adapter=coinAdapter
         retrofit=Retrofit.Builder()
             .baseUrl("https://api.coingecko.com/")
-            .addCallAdapterFactory(SynchronousCallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         coinRetrofit=retrofit?.create(CoinRetrofit::class.java)
 
     }
     fun getOneList(page:Int){
-        val disposable=Single.fromCallable{
-            val listCoins=coinRetrofit?.getCoins(
-                "usd",
-                "market_cap_desc",
-                70,
-                page,
-                false
-            )
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                    nullableCoins->nullableCoins?.let{
-                    coinAdapter.addItems(it as ArrayList<Coin>)
-                }
-                    progress?.visibility=View.GONE
-            },
-            {
-                Log.i("MyCoinsListFragment:","$it")
-                it.printStackTrace()
-                Toast.makeText(requireContext(), "Error: $it", Toast.LENGTH_LONG).show()
-                progress?.visibility = View.GONE
-            })
+        val call=coinRetrofit?.getCoins(
+            "usd",
+            "market_cap_desc",
+            70,
+            page,
+            false
+        )
+        call?.enqueue(object:Callback<List<Coin>>{
+            override fun onResponse(call: Call<List<Coin>>, response: Response<List<Coin>>) {
+               response.body()?.let {
+                   coinAdapter.addItems(it as ArrayList<Coin>)
+               }
+                progress?.visibility=View.GONE
+            }
 
+            override fun onFailure(call: Call<List<Coin>>, t: Throwable) {
+                Log.i("MyCoinsListFragment:","$t")
+                t.printStackTrace()
+                Toast.makeText(requireContext(), "Error: $t", Toast.LENGTH_LONG).show()
+                progress?.visibility = View.GONE
+            }
+
+        })
     }
 }

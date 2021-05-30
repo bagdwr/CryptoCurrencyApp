@@ -14,5 +14,5 @@ class Coin(
     @SerializedName("image")
     val image:String,
     @SerializedName("total_volume")
-    val total_volume:Double
+    val total_volume:Long
 )

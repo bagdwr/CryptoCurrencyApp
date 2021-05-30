@@ -14,5 +14,5 @@ interface CoinRetrofit {
         @Query("per_page") per_page: Int,
         @Query("page") page: Int,
         @Query("sparkline") sparkline:Boolean
-    ):List<Coin>
+    ): Call<List<Coin>>
 }
