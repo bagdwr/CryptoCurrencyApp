@@ -43,16 +43,21 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
 
-    // https://mvnrepository.com/artifact/io.reactivex.rxjava2/rxjava
-    implementation group: 'io.reactivex.rxjava2', name: 'rxjava', version: '2.2.19'
 
-    // https://mvnrepository.com/artifact/com.squareup.okhttp3/okhttp
-    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.9.1'
+    //RX Java2
+    implementation "io.reactivex.rxjava2:rxjava:2.2.21"
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    implementation "com.jaredsburrows.retrofit:retrofit2-synchronous-adapter:0.5.0"
+
+    // Glide
+    implementation 'com.github.bumptech.glide:glide:4.12.0'
+    annotationProcessor 'com.github.bumptech.glide:compiler:4.12.0'
 
     // Retrofit
     implementation 'com.squareup.retrofit2:retrofit:2.7.1'
     implementation 'com.squareup.retrofit2:converter-gson:2.7.1'
 
-    // https://mvnrepository.com/artifact/com.github.bumptech.glide/glide
-    implementation group: 'com.github.bumptech.glide', name: 'glide', version: '4.11.0'
+    //OkHttp
+    implementation "com.squareup.okhttp3:okhttp:4.9.0"
 }
