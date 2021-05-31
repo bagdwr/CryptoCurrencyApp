@@ -17,8 +17,10 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 class CoinsListFragment:Fragment() {
     //https://api.coingecko.com/
@@ -43,10 +45,18 @@ class CoinsListFragment:Fragment() {
         setupRV()
         retrofit=Retrofit.Builder()
             .baseUrl("https://api.coingecko.com/")
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(30,TimeUnit.SECONDS)
+                    .writeTimeout(30,TimeUnit.SECONDS)
+                    .readTimeout(30,TimeUnit.SECONDS)
+                    .build()
+            )
             .addCallAdapterFactory(SynchronousCallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         coinRetrofit=retrofit?.create(CoinRetrofit::class.java)
+        getOneList(pageNumber)
     }
 
     override fun onStop() {
@@ -82,7 +92,7 @@ class CoinsListFragment:Fragment() {
                 coinRetrofit?.getCoins(
                 "usd",
                 "market_cap_desc",
-                20,
+                12,
                 page,
                 false
             )
