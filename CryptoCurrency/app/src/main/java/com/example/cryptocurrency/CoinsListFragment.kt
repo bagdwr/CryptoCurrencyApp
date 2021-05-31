@@ -27,6 +27,7 @@ class CoinsListFragment:Fragment() {
     private var retrofit:Retrofit?=null
     private var progress:ProgressBar?=null
     private val compositeDisposable=CompositeDisposable()
+    private var pageNumber:Int=1
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,34 +41,48 @@ class CoinsListFragment:Fragment() {
         progress=view.findViewById<ProgressBar>(R.id.progressBar)
         progress?.visibility=View.VISIBLE
         setupRV()
-        getOneList(1)
-    }
-
-    fun setupRV(){
-        val rvCoins=view?.findViewById<RecyclerView>(R.id.rvCoinList)
-        rvCoins?.layoutManager=LinearLayoutManager(context)
-        rvCoins?.adapter=coinAdapter
         retrofit=Retrofit.Builder()
             .baseUrl("https://api.coingecko.com/")
             .addCallAdapterFactory(SynchronousCallAdapterFactory.create())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         coinRetrofit=retrofit?.create(CoinRetrofit::class.java)
+    }
 
+    override fun onStop() {
+        compositeDisposable.clear()
+        super.onStop()
+    }
+
+    fun setupRV(){
+        val rvCoins=view?.findViewById<RecyclerView>(R.id.rvCoinList)
+        val linearLayoutManager=LinearLayoutManager(context)
+        rvCoins?.layoutManager=linearLayoutManager
+        rvCoins?.adapter=coinAdapter
+        rvCoins?.addOnScrollListener(object: RecyclerView.OnScrollListener(){
+            override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
+                super.onScrollStateChanged(recyclerView, newState)
+            }
+
+            override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                linearLayoutManager?.let {
+                    val visibleCoinCount=it.childCount
+                    val totalItemCount=it.itemCount
+                    val firstVisibleItemPosition=it.findFirstVisibleItemPosition()
+                    if (visibleCoinCount+firstVisibleItemPosition>=totalItemCount && firstVisibleItemPosition>=0){
+                        getOneList(pageNumber)
+                    }
+                }
+                super.onScrolled(recyclerView, dx, dy)
+            }
+        })
     }
     fun getOneList(page:Int){
-//        val call=coinRetrofit?.getCoins(
-//            "usd",
-//            "market_cap_desc",
-//            70,
-//            page,
-//            false
-//        )
         val disposable=Single.fromCallable{
                 coinRetrofit?.getCoins(
                 "usd",
                 "market_cap_desc",
-                70,
+                20,
                 page,
                 false
             )
@@ -77,6 +92,7 @@ class CoinsListFragment:Fragment() {
                 {
                     nullableCoins->nullableCoins?.let{
                     coinAdapter.addItems(it)
+                    pageNumber++
             }
                     progress?.visibility = View.GONE
             },{
