@@ -10,7 +10,7 @@ class MainActivity : AppCompatActivity() {
 
         val fragment= CoinsListFragment()
         supportFragmentManager.beginTransaction()
-            .add(R.id.fragmentContainer,fragment)
+            .replace(R.id.fragmentContainer,fragment)
             .commit()
     }
 }

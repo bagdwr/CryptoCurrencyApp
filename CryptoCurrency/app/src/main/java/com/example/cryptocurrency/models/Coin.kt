@@ -10,7 +10,7 @@ class Coin(
     @SerializedName("current_price")
     val current_price:Double,
     @SerializedName("market_cap")
-    val market_cap:Long,
+    val market_cap:Double,
     @SerializedName("image")
     val image:String,
     @SerializedName("total_volume")

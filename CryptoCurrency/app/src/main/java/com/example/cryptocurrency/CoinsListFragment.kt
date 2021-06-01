@@ -10,6 +10,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.cryptocurrency.models.Coin
 import com.example.cryptocurrency.recyclerView.CoinListAdapter
 import com.jaredsburrows.retrofit2.adapter.synchronous.SynchronousCallAdapterFactory
@@ -27,9 +28,10 @@ class CoinsListFragment:Fragment() {
     private var coinRetrofit:CoinRetrofit?=null
     private val coinAdapter:CoinListAdapter= CoinListAdapter()
     private var retrofit:Retrofit?=null
-    private var progress:ProgressBar?=null
+    private var swipeLayout: SwipeRefreshLayout?=null
     private val compositeDisposable=CompositeDisposable()
     private var pageNumber:Int=1
+    private var isLoading:Boolean=false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,8 +42,11 @@ class CoinsListFragment:Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        progress=view.findViewById<ProgressBar>(R.id.progressBar)
-        progress?.visibility=View.VISIBLE
+        swipeLayout=view.findViewById(R.id.swipeRefresh)
+        swipeLayout?.isRefreshing=true
+        swipeLayout?.setOnRefreshListener {
+            refresh()
+        }
         setupRV()
         retrofit=Retrofit.Builder()
             .baseUrl("https://api.coingecko.com/")
@@ -56,7 +61,12 @@ class CoinsListFragment:Fragment() {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
         coinRetrofit=retrofit?.create(CoinRetrofit::class.java)
-        getOneList(pageNumber)
+        getOneList(pageNumber,false)
+    }
+
+    private fun refresh(){
+        pageNumber=1
+        getOneList(1,true)
     }
 
     override fun onStop() {
@@ -80,15 +90,18 @@ class CoinsListFragment:Fragment() {
                     val totalItemCount=it.itemCount
                     val firstVisibleItemPosition=it.findFirstVisibleItemPosition()
                     if (visibleCoinCount+firstVisibleItemPosition>=totalItemCount && firstVisibleItemPosition>=0){
-                        progress?.visibility=View.VISIBLE
-                        getOneList(pageNumber)
+                        getOneList(pageNumber,false)
                     }
                 }
                 super.onScrolled(recyclerView, dx, dy)
             }
         })
     }
-    fun getOneList(page:Int){
+    fun getOneList(page:Int, isRefresh:Boolean){
+        if (isLoading){
+            return
+        }
+        isLoading=true
         val disposable=Single.fromCallable{
                 coinRetrofit?.getCoins(
                 "usd",
@@ -102,15 +115,22 @@ class CoinsListFragment:Fragment() {
             .subscribe(
                 {
                     nullableCoins->nullableCoins?.let{
-                    coinAdapter.addItems(it)
+                    if (isRefresh){
+                        coinAdapter.refreshItems(it)
+                    }else{
+                        coinAdapter.addItems(it)
+                    }
                     pageNumber++
+                    isLoading=false
+
             }
-                    progress?.visibility = View.GONE
+                    swipeLayout?.isRefreshing = false
             },{
+                isLoading=false
                 Log.i("MyCoinsListFragment:","$it")
                 it.printStackTrace()
                 Toast.makeText(requireContext(), "Error: $it", Toast.LENGTH_LONG).show()
-                progress?.visibility = View.GONE
+                swipeLayout?.isRefreshing =false
             })
         compositeDisposable.add(disposable)
     }

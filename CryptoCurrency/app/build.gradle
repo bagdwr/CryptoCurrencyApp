@@ -60,4 +60,6 @@ dependencies {
 
     //OkHttp
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
+
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
 }
