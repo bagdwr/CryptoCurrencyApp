@@ -80,6 +80,7 @@ class CoinsListFragment:Fragment() {
                     val totalItemCount=it.itemCount
                     val firstVisibleItemPosition=it.findFirstVisibleItemPosition()
                     if (visibleCoinCount+firstVisibleItemPosition>=totalItemCount && firstVisibleItemPosition>=0){
+                        progress?.visibility=View.VISIBLE
                         getOneList(pageNumber)
                     }
                 }
@@ -92,7 +93,7 @@ class CoinsListFragment:Fragment() {
                 coinRetrofit?.getCoins(
                 "usd",
                 "market_cap_desc",
-                12,
+                15,
                 page,
                 false
             )
