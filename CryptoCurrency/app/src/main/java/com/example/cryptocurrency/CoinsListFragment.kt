@@ -22,12 +22,16 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 class CoinsListFragment:Fragment() {
+    //region di vars
+    @Inject
+    lateinit var coinRetrofit: CoinRetrofit
+
+    //endregion
     //https://api.coingecko.com/
-    private var coinRetrofit:CoinRetrofit?=null
     private val coinAdapter:CoinListAdapter= CoinListAdapter()
-    private var retrofit:Retrofit?=null
     private var swipeLayout: SwipeRefreshLayout?=null
     private val compositeDisposable=CompositeDisposable()
     private var pageNumber:Int=1
@@ -42,25 +46,13 @@ class CoinsListFragment:Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        (requireActivity().application as App).appComponent.provideInj(this)
         swipeLayout=view.findViewById(R.id.swipeRefresh)
         swipeLayout?.isRefreshing=true
         swipeLayout?.setOnRefreshListener {
             refresh()
         }
         setupRV()
-        retrofit=Retrofit.Builder()
-            .baseUrl("https://api.coingecko.com/")
-            .client(
-                OkHttpClient.Builder()
-                    .connectTimeout(30,TimeUnit.SECONDS)
-                    .writeTimeout(30,TimeUnit.SECONDS)
-                    .readTimeout(30,TimeUnit.SECONDS)
-                    .build()
-            )
-            .addCallAdapterFactory(SynchronousCallAdapterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-        coinRetrofit=retrofit?.create(CoinRetrofit::class.java)
         getOneList(pageNumber,false)
     }
 
